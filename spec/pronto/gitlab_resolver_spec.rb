@@ -74,7 +74,12 @@ RSpec.describe Pronto::Formatter::GitlabMergeRequestReviewFormatter do # rubocop
       let(:existing_discussions) do
         [
           { id: "resolved123", notes: [
-            { id: 321, body: "Fixed comment", position: { new_path: "somefile.txt", new_line: 1 }, author: { id: bot_uid } }
+            { id: 321, type: 'DiffNote', body: "Fixed comment", position: { new_path: "somefile.txt", new_line: 1 }, author: { id: bot_uid } },
+            {
+              id: 3211, type: 'DiffNote', body: "changed this line...", system: true,
+              position: { new_path: "somefile.txt", new_line: 1 },
+              author: { id: 12345 }
+            }
           ]},
           { id: "abcd12", notes: [
             { id: 321, body: "Non-fixed", position: { new_path: "somefile.txt", new_line: 1 }, author: { id: bot_uid } }

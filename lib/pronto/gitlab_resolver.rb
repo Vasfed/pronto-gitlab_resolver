@@ -34,7 +34,7 @@ module Pronto
           next unless note["position"] && note.position&.[]("new_path")
           note_position = [note.position.new_path, note.position.new_line]
           next if still_actual_comments[note_position].any? { |comment| comment.body == note.body }
-          thread.notes.size == 1
+          thread.notes.all? { |note| note["system"] || note&.author&.id == bot_id }
         end
 
         threads_to_resolve.each do |thread|
