@@ -1,7 +1,15 @@
 # frozen_string_literal: true
 
 RSpec.describe Pronto::Formatter::GitlabMergeRequestReviewFormatter do # rubocop:disable RSpec/FilePath
-  let(:repo) { Pronto::Git::Repository.new("test.git") }
+  let(:repo) do
+    # puts "dir is #{Dir.pwd}"
+    path = Pathname.new("test.git")
+    raise 'No git dir' unless path.directory?
+    # libgit2 in rugged checks for [HEAD objects refs]
+    path.join('refs').then { _1.mkdir unless _1.directory? }
+
+    Pronto::Git::Repository.new(path)
+  end
 
   around do |spec|
     # change to repository workdir (for paths to match)
@@ -73,7 +81,10 @@ RSpec.describe Pronto::Formatter::GitlabMergeRequestReviewFormatter do # rubocop
       end
       let(:existing_discussions) do
         [
-          { id: "resolved123", notes: [
+          { id: "already_resolved", notes: [
+            { id: 321, body: "Fixed comment", resolved: true, position: { new_path: "somefile.txt", new_line: 1 }, author: { id: bot_uid } }
+          ]},
+          { id: "new_resolved123", notes: [
             { id: 321, type: 'DiffNote', body: "Fixed comment", position: { new_path: "somefile.txt", new_line: 2 }, author: { id: bot_uid } },
             {
               id: 3211, type: 'DiffNote', body: "changed this line...", system: true,
@@ -90,7 +101,7 @@ RSpec.describe Pronto::Formatter::GitlabMergeRequestReviewFormatter do # rubocop
         ]
       end
       let!(:resolve_request) do
-        stub_request(:put, "#{glab_api_discussions_path}/resolved123").with(
+        stub_request(:put, "#{glab_api_discussions_path}/new_resolved123").with(
           body: { resolved: "true" },
           headers: { 'Private-Token' => glab_api_token }
         ).to_return(status: 200)

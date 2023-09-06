@@ -29,6 +29,7 @@ module Pronto
 
         threads_to_resolve = client.merge_request_discussions(slug, pull_id).auto_paginate.select do |thread|
           note = thread.notes&.first
+          next if note["resolved"] #|| !note["resolvable"]
           # NOTE: this may cause issues if bot is reused for some other linters that also add code comments
           next unless note&.author&.id == bot_id
           next unless note["position"] && note.position&.[]("new_path")
